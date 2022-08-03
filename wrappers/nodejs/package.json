@@ -15,6 +15,10 @@
     "camera",
     "depth camera"
   ],
+  "engineStrict": true,
+  "engines": {
+    "node": "14.18.1"
+  },
   "scripts": {
     "test": "mocha",
     "doc": "node scripts/generate-doc.js",
