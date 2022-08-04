@@ -23,7 +23,7 @@
     "test": "mocha",
     "doc": "node scripts/generate-doc.js",
     "install": "node-gyp rebuild",
-    "postinstall": "node scripts/generate-doc.js && node scripts/generate-dist"
+    "postinstall": "node scripts/generate-doc.js && node scripts/generate-dist-package.js"
   },
   "author": "Kenny Yuan <kaining.yuan@intel.com>",
   "license": "Apache-2.0",
