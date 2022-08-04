@@ -861,10 +861,12 @@ class RSFrame : public Nan::ObjectWrap {
     const auto height = GetNativeResult<int>(rs2_get_frame_height, &me->error_,
         me->frame_, &me->error_);
     const auto length = stride * height;
-    auto array_buffer = v8::ArrayBuffer::New(
-        v8::Isolate::GetCurrent(),
-        static_cast<uint8_t*>(const_cast<void*>(buffer)), length,
-        v8::ArrayBufferCreationMode::kExternalized);
+    
+    auto backing = v8::ArrayBuffer::NewBackingStore(
+      const_cast<void*>(buffer), length,
+      [](void*, size_t, void*){}, nullptr
+    );
+    auto array_buffer = v8::ArrayBuffer::New(v8::Isolate::GetCurrent(), std::move(backing));
     info.GetReturnValue().Set(array_buffer);
   }
 
@@ -882,8 +884,8 @@ class RSFrame : public Nan::ObjectWrap {
         me->frame_, &me->error_);
     const size_t length = stride * height;
     if (buffer && array_buffer->ByteLength() >= length) {
-      auto contents = array_buffer->GetContents();
-      memcpy(contents.Data(), buffer, length);
+      auto contents = array_buffer->GetBackingStore();
+      memcpy(contents->Data(), buffer, length);
     }
   }
 
@@ -1088,9 +1090,11 @@ class RSFrame : public Nan::ObjectWrap {
     for (size_t i = 0; i < count; i++) {
       memcpy(vertex_buf+i*step, vertices[i].xyz, step);
     }
-    auto array_buffer = v8::ArrayBuffer::New(
-        v8::Isolate::GetCurrent(), vertex_buf, len,
-        v8::ArrayBufferCreationMode::kInternalized);
+
+    auto backing = v8::ArrayBuffer::NewBackingStore(
+      vertex_buf, len, [](void*, size_t, void*){}, nullptr
+    );
+    auto array_buffer = v8::ArrayBuffer::New(v8::Isolate::GetCurrent(), std::move(backing));
 
     info.GetReturnValue().Set(v8::Float32Array::New(array_buffer, 0, 3*count));
   }
@@ -1135,8 +1139,8 @@ class RSFrame : public Nan::ObjectWrap {
     const uint32_t length = count * step;
     if (array_buffer->ByteLength() < length) return;
 
-    auto contents = array_buffer->GetContents();
-    uint8_t* vertex_buf = static_cast<uint8_t*>(contents.Data());
+    auto contents = array_buffer->GetBackingStore();
+    uint8_t* vertex_buf = static_cast<uint8_t*>(contents->Data());
     for (size_t i = 0; i < count; i++) {
       memcpy(vertex_buf+i*step, vertBuf[i].xyz, step);
     }
@@ -1158,13 +1162,15 @@ class RSFrame : public Nan::ObjectWrap {
     uint32_t step = 2 * sizeof(int);
     uint32_t len = count * step;
     auto texcoord_buf = static_cast<uint8_t*>(malloc(len));
-
     for (size_t i = 0; i < count; ++i) {
       memcpy(texcoord_buf + i * step, coords[i].ij, step);
     }
-    auto array_buffer = v8::ArrayBuffer::New(
-        v8::Isolate::GetCurrent(), texcoord_buf, len,
-        v8::ArrayBufferCreationMode::kInternalized);
+
+    auto backing = v8::ArrayBuffer::NewBackingStore(
+      static_cast<void*>(texcoord_buf), len,
+      [](void*, size_t, void*){}, nullptr
+    );
+    auto array_buffer = v8::ArrayBuffer::New(v8::Isolate::GetCurrent(), std::move(backing));
 
     info.GetReturnValue().Set(v8::Int32Array::New(array_buffer, 0, 2*count));
   }
@@ -1185,8 +1191,8 @@ class RSFrame : public Nan::ObjectWrap {
     const uint32_t length = count * step;
     if (array_buffer->ByteLength() < length) return;
 
-    auto contents = array_buffer->GetContents();
-    uint8_t* texcoord_buf = static_cast<uint8_t*>(contents.Data());
+    auto contents = array_buffer->GetBackingStore();
+    uint8_t* texcoord_buf = static_cast<uint8_t*>(contents->Data());
     for (size_t i = 0; i < count; ++i) {
       memcpy(texcoord_buf + i * step, coords[i].ij, step);
     }

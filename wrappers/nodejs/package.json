@@ -17,13 +17,13 @@
   ],
   "engineStrict": true,
   "engines": {
-    "node": "14.18.1"
+    "node": ">=15.0.0"
   },
   "scripts": {
     "test": "mocha",
     "doc": "node scripts/generate-doc.js",
     "install": "node-gyp rebuild",
-    "postinstall": "node scripts/generate-doc.js"
+    "postinstall": "node scripts/generate-doc.js && node scripts/generate-dist"
   },
   "author": "Kenny Yuan <kaining.yuan@intel.com>",
   "license": "Apache-2.0",
@@ -35,7 +35,7 @@
     "pngjs": "^3.3.0"
   },
   "devDependencies": {
-    "marked": "~0.3.9",
-    "jsdoc": "^3.6.6"
+    "jsdoc": "^3.6.6",
+    "marked": "^4.0.18"
   }
 }
